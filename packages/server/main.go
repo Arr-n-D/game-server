@@ -12,7 +12,7 @@ import (
 var g_bQuit bool = false
 var pollGroup gns.PollGroup
 
-func callback(info *gns.StatusChangedCallbackInfo) {
+func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	switch state := info.Info().State(); state {
 	case gns.ConnectionStateConnecting:
 		fmt.Println("Connecting")
@@ -32,10 +32,10 @@ func callback(info *gns.StatusChangedCallbackInfo) {
 func main() {
 	gns.Init(nil)
 	gns.SetDebugOutputFunction(gns.DebugOutputTypeEverything, func(typ gns.DebugOutputType, msg string) {
-		log.Print("[DEBUG]", typ, msg)
+		log.Print("[DEBUG] ", typ, msg)
 	})
 
-	gns.SetGlobalCallbackStatusChanged(callback)
+	gns.SetGlobalCallbackStatusChanged(StatusCallBackChanged)
 	defer gns.Kill()
 
 	l, err := gns.Listen(&net.UDPAddr{IP: net.IP{127, 0, 0, 1}, Port: 27015}, nil)

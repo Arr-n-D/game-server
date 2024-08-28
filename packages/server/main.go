@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	config "internal/configuration"
 	"net"
 
 	"log"
@@ -30,6 +31,8 @@ func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 }
 
 func main() {
+	config.InitSentry()
+
 	gns.Init(nil)
 	gns.SetDebugOutputFunction(gns.DebugOutputTypeEverything, func(typ gns.DebugOutputType, msg string) {
 		log.Print("[DEBUG] ", typ, msg)

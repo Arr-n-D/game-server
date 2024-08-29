@@ -2,7 +2,6 @@ package configuration
 
 type Configuration struct {
 	DBConf         DatabaseConfiguration
-	SentryURL      string
 	Env            string
 	GameServerPort uint16
 }
@@ -17,7 +16,8 @@ func GetConfiguration() *Configuration {
 	switch env := GetEnv(); env {
 	case DevEnv:
 		return &Configuration{
-			// sentry.Dsn
+			Env:            env,
+			GameServerPort: 27015,
 		}
 	}
 

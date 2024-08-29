@@ -2,7 +2,6 @@ package configuration
 
 import (
 	"log"
-	"time"
 
 	"github.com/getsentry/sentry-go"
 )
@@ -31,5 +30,5 @@ func InitSentry() {
 		log.Fatalf("sentry.Init: %s", err)
 	}
 
-	defer sentry.Flush(2 * time.Second)
+	// sentry.CaptureMessage("Hello!")
 }

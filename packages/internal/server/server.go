@@ -21,7 +21,22 @@ type Server struct {
 	// Pointer to DB
 }
 
+func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
+	switch state := info.Info().State(); state {
+	case gns.ConnectionStateConnecting:
+		fmt.Println("Connecting")
+		conn := info.Conn()
+		if conn.Accept() != gns.ResultOK {
+			log.Fatalln("Failed to accept client")
+		}
 
+		if !conn.SetPollGroup(ServerInstance.PollGroup) {
+			log.Fatalln("Failed to set poll group")
+		}
+
+	}
+
+}
 
 func InitServer() {
 	configuration.InitSentry()

@@ -21,7 +21,7 @@ type Server struct {
 	// Pointer to DB
 }
 
-func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
+func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	switch state := info.Info().State(); state {
 	case gns.ConnectionStateConnecting:
 		fmt.Println("Connecting")
@@ -30,7 +30,7 @@ func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 			log.Fatalln("Failed to accept client")
 		}
 
-		if !conn.SetPollGroup(ServerInstance.PollGroup) {
+		if !conn.SetPollGroup(s.PollGroup) {
 			log.Fatalln("Failed to set poll group")
 		}
 
@@ -43,8 +43,8 @@ func InitServer() {
 	initGameNetworkingSockets()
 	initServer()
 
-	// ServerInstance.pollForIncomingMessages()
-	gns.SetGlobalCallbackStatusChanged(StatusCallBackChanged)
+	gns.SetGlobalCallbackStatusChanged(ServerInstance.StatusCallBackChanged)
+	ServerInstance.pollForIncomingMessages()
 	ServerInstance.runCallbacks()
 }
 

@@ -13,6 +13,7 @@ func main() {
 
 	server.InitServer()
 
+	server.ServerInstance.ThreadWaitGroup.Wait()
 	defer gns.Kill()
 	defer sentry.Flush(5 * time.Second)
 }

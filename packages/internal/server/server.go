@@ -5,6 +5,7 @@ import (
 	"internal/configuration"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/arr-n-d/gns"
@@ -14,10 +15,10 @@ import (
 var ServerInstance *Server
 
 type Server struct {
-	PollGroup gns.PollGroup
-	listener  *gns.Listener
-	Quit      bool
-
+	PollGroup       gns.PollGroup
+	listener        *gns.Listener
+	Quit            bool
+	ThreadWaitGroup sync.WaitGroup
 	// Pointer to DB
 }
 
@@ -44,8 +45,10 @@ func InitServer() {
 	initServer()
 
 	gns.SetGlobalCallbackStatusChanged(ServerInstance.StatusCallBackChanged)
-	ServerInstance.pollForIncomingMessages()
-	ServerInstance.runCallbacks()
+
+	ServerInstance.ThreadWaitGroup.Add(1)
+	go ServerInstance.networkThread()
+
 }
 
 func initGameNetworkingSockets() {
@@ -92,22 +95,20 @@ func initServer() {
 	ServerInstance = &Server{
 		PollGroup: poll,
 		listener:  l,
-		Quit:      false,
+		Quit:      true,
 	}
 
 }
 
-func (s *Server) pollForIncomingMessages() {
-	go func() {
-		for ok := true; ok; ok = !s.Quit {
-			fmt.Println("Incoming messages go routine")
-			time.Sleep(time.Second * 15)
-		}
-	}()
-}
+func (s *Server) networkThread() {
 
-func (s *Server) runCallbacks() {
+	defer s.ThreadWaitGroup.Done()
+
 	for ok := true; ok; ok = !s.Quit {
 		gns.RunCallbacks()
+		fmt.Println("Incoming messages go routine")
+		time.Sleep(time.Second * 15)
+
 	}
+
 }

@@ -95,7 +95,7 @@ func initServer() {
 	ServerInstance = &Server{
 		PollGroup: poll,
 		listener:  l,
-		Quit:      true,
+		Quit:      false,
 	}
 
 }

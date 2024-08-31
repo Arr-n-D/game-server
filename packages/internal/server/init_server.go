@@ -4,7 +4,6 @@ import (
 	"internal/configuration"
 	"log"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/arr-n-d/gns"
@@ -17,17 +16,6 @@ const (
 	tickRate     = 24
 	tickDuration = time.Second / tickRate
 )
-
-type Server struct {
-	PollGroup              gns.PollGroup
-	listener               *gns.Listener
-	Quit                   bool
-	ThreadWaitGroup        sync.WaitGroup
-	ReceiveMessagesChannel chan []byte
-	SendMessagesChannel    chan []byte
-
-	// Pointer to DB
-}
 
 func InitServer() {
 	configuration.InitSentry()

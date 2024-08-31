@@ -3,11 +3,24 @@ package server
 import (
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/arr-n-d/gns"
 	"github.com/getsentry/sentry-go"
 )
+
+type Server struct {
+	PollGroup              gns.PollGroup
+	listener               *gns.Listener
+	Quit                   bool
+	ThreadWaitGroup        sync.WaitGroup
+	ReceiveMessagesChannel chan []byte
+	SendMessagesChannel    chan []byte
+	MessagesToProcess      chan []byte
+
+	// Pointer to DB
+}
 
 func (s *Server) init() {
 	s.ThreadWaitGroup.Add(1)

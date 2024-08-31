@@ -37,7 +37,7 @@ func main() {
 	gns.SetDebugOutputFunction(gns.DebugOutputTypeEverything, func(typ gns.DebugOutputType, msg string) {
 		log.Print("[DEBUG]", typ, msg)
 	})
-	// defer gns.Kill()
+	defer gns.Kill()
 
 	addrr := &net.UDPAddr{
 		IP:   net.IP{127, 0, 0, 1},

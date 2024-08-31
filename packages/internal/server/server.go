@@ -71,18 +71,15 @@ func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
 func (s *Server) PollForIncomingMessages() {
 
 	for ok := true; ok; ok = !s.Quit {
-		messages := make([]*gns.Message, 200)
+		messages := make([]*gns.Message, 1)
 
-		// []gns._Ctype_struct_SteamNetworkingMessage_t) -> messages
-		// []*gns._Ctype_struct_SteamNetworkingMessage_t -> expected type
 		mSuccess := s.PollGroup.ReceiveMessages(messages)
 
 		if mSuccess == 0 {
-			// fmt.Println("Issue: 0")
 			break
 		}
 		if mSuccess < 0 {
-			log.Fatal("Error checking for messages")
+			sentry.CaptureMessage("")
 		}
 
 		fmt.Println(messages[0].Payload())

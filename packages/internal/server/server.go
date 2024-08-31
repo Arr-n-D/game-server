@@ -21,14 +21,15 @@ func (s *Server) networkThread() {
 
 	for ok := true; ok; ok = !s.Quit {
 		gns.RunCallbacks()
-		s.PollForIncomingMessages()
+		s.pollForIncomingMessages()
+		// s.sendQueuedMessages()
 		time.Sleep(time.Millisecond)
 
 	}
 
 }
 
-func (s *Server) PollForIncomingMessages() {
+func (s *Server) pollForIncomingMessages() {
 
 	for ok := true; ok; ok = !s.Quit {
 

@@ -2,24 +2,62 @@ package server
 
 import (
 	"fmt"
-	"internal/configuration"
 	"log"
-	"net"
-	"sync"
 	"time"
 
 	"github.com/arr-n-d/gns"
 	"github.com/getsentry/sentry-go"
 )
 
-var ServerInstance *Server
+func (s *Server) init() {
+	s.ThreadWaitGroup.Add(1)
+	go s.networkThread()
+	go s.gameLoopThread()
+}
 
-type Server struct {
-	PollGroup       gns.PollGroup
-	listener        *gns.Listener
-	Quit            bool
-	ThreadWaitGroup sync.WaitGroup
-	// Pointer to DB
+func (s *Server) networkThread() {
+
+	defer s.ThreadWaitGroup.Done()
+
+	for ok := true; ok; ok = !s.Quit {
+		gns.RunCallbacks()
+		s.PollForIncomingMessages()
+		time.Sleep(time.Millisecond)
+
+	}
+
+}
+
+func (s *Server) PollForIncomingMessages() {
+
+	for ok := true; ok; ok = !s.Quit {
+
+		messages := make([]*gns.Message, 1)
+
+		mSuccess := s.PollGroup.ReceiveMessages(messages)
+
+		if mSuccess == 0 {
+			break
+		}
+
+		if mSuccess < 0 {
+			sentry.CaptureMessage("Failed to receive messages")
+		}
+
+		mPayload := make([]byte, len(messages[0].Payload()))
+		copy(mPayload, messages[0].Payload())
+		messages[0].Release()
+
+		fmt.Println(mPayload)
+
+		fmt.Println("We're here")
+		s.ReceiveMessagesChannel <- mPayload
+		fmt.Println("We're here 2")
+
+		x := <-s.ReceiveMessagesChannel
+		fmt.Println(x)
+
+	}
 }
 
 func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
@@ -36,99 +74,6 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 		if !conn.SetPollGroup(s.PollGroup) {
 			log.Fatalln("Failed to set poll group")
 		}
-	}
-
-}
-
-func InitServer() {
-	configuration.InitSentry()
-	initGameNetworkingSockets()
-	initServer()
-
-	gns.SetGlobalCallbackStatusChanged(ServerInstance.StatusCallBackChanged)
-
-	ServerInstance.ThreadWaitGroup.Add(1)
-	go ServerInstance.networkThread()
-
-}
-
-func initGameNetworkingSockets() {
-	err := gns.Init(nil)
-
-	if err != nil {
-		log.Fatal(err)
-		sentry.CaptureException(err)
-	}
-
-}
-
-func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
-	gns.SetDebugOutputFunction(detailLevel, func(typ gns.DebugOutputType, msg string) {
-		log.Print("[DEBUG] ", typ, msg)
-	})
-}
-
-func (s *Server) PollForIncomingMessages() {
-
-	for ok := true; ok; ok = !s.Quit {
-		messages := make([]*gns.Message, 1)
-
-		mSuccess := s.PollGroup.ReceiveMessages(messages)
-
-		if mSuccess == 0 {
-			break
-		}
-		if mSuccess < 0 {
-			sentry.CaptureMessage("")
-		}
-
-		fmt.Println(messages[0].Payload())
-	}
-
-}
-
-func initServer() {
-	conf := configuration.GetConfiguration()
-
-	if conf.Env == configuration.DevEnv {
-		setDebugOutputFunction(gns.DebugOutputTypeEverything)
-	}
-
-	l, err := gns.Listen(&net.UDPAddr{
-		IP:   net.IP{127, 0, 0, 1},
-		Port: int(conf.GameServerPort),
-	},
-		nil,
-	)
-
-	if err != nil {
-		sentry.CaptureException(err)
-		log.Fatalf("Failed to listen on port %d", conf.GameServerPort)
-	}
-
-	poll := gns.NewPollGroup()
-	if poll == gns.InvalidPollGroup {
-		sentry.CaptureMessage("Failed to create poll group")
-		log.Fatal("Invalid poll group")
-	}
-
-	ServerInstance = &Server{
-		PollGroup: poll,
-		listener:  l,
-		Quit:      false,
-	}
-
-}
-
-func (s *Server) networkThread() {
-
-	defer s.ThreadWaitGroup.Done()
-
-	for ok := true; ok; ok = !s.Quit {
-		gns.RunCallbacks()
-		s.PollForIncomingMessages()
-		time.Sleep(time.Millisecond * 2)
-
 	}
 
 }

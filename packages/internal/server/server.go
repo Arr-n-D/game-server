@@ -24,6 +24,8 @@ type Server struct {
 
 func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	switch state := info.Info().State(); state {
+	case gns.ConnectionStateConnected:
+		fmt.Println("Accepted connection")
 	case gns.ConnectionStateConnecting:
 		fmt.Println("Connecting")
 		conn := info.Conn()
@@ -34,7 +36,6 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 		if !conn.SetPollGroup(s.PollGroup) {
 			log.Fatalln("Failed to set poll group")
 		}
-
 	}
 
 }
@@ -65,6 +66,28 @@ func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
 	gns.SetDebugOutputFunction(detailLevel, func(typ gns.DebugOutputType, msg string) {
 		log.Print("[DEBUG] ", typ, msg)
 	})
+}
+
+func (s *Server) PollForIncomingMessages() {
+
+	for ok := true; ok; ok = !s.Quit {
+		messages := make([]*gns.Message, 200)
+
+		// []gns._Ctype_struct_SteamNetworkingMessage_t) -> messages
+		// []*gns._Ctype_struct_SteamNetworkingMessage_t -> expected type
+		mSuccess := s.PollGroup.ReceiveMessages(messages)
+
+		if mSuccess == 0 {
+			// fmt.Println("Issue: 0")
+			break
+		}
+		if mSuccess < 0 {
+			log.Fatal("Error checking for messages")
+		}
+
+		fmt.Println(messages[0].Payload())
+	}
+
 }
 
 func initServer() {
@@ -106,8 +129,8 @@ func (s *Server) networkThread() {
 
 	for ok := true; ok; ok = !s.Quit {
 		gns.RunCallbacks()
-		fmt.Println("Incoming messages go routine")
-		time.Sleep(time.Second * 15)
+		s.PollForIncomingMessages()
+		time.Sleep(time.Millisecond * 2)
 
 	}
 

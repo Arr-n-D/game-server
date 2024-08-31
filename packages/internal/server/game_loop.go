@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type Item struct {
+	Foo string
+}
+
 func (s *Server) gameLoopThread() {
 	defer s.ThreadWaitGroup.Done()
 
@@ -32,5 +36,17 @@ func (s *Server) gameLoopThread() {
 }
 
 func (s *Server) processIncomingMessages() {
-    
+	for {
+		select {
+		case msg, ok := <-s.ReceiveMessagesChannel:
+			if !ok {
+				// Channel is closed
+				return
+			}
+			queue.Enqueue(msg)
+		default:
+			// No more messages available without blocking
+			return
+		}
+	}
 }

@@ -47,16 +47,7 @@ func (s *Server) PollForIncomingMessages() {
 		mPayload := make([]byte, len(messages[0].Payload()))
 		copy(mPayload, messages[0].Payload())
 		messages[0].Release()
-
-		fmt.Println(mPayload)
-
-		fmt.Println("We're here")
 		s.ReceiveMessagesChannel <- mPayload
-		fmt.Println("We're here 2")
-
-		x := <-s.ReceiveMessagesChannel
-		fmt.Println(x)
-
 	}
 }
 

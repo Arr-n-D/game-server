@@ -1,8 +1,13 @@
 package server
 
 import (
-	"fmt"
+	"log/slog"
 	"time"
+)
+
+const (
+	tickRate     = 24
+	tickDuration = time.Second / tickRate
 )
 
 type Item struct {
@@ -10,7 +15,7 @@ type Item struct {
 }
 
 func (s *Server) gameLoopThread() {
-	defer s.ThreadWaitGroup.Done()
+	defer s.threadWaitGroup.Done()
 
 	lastTickTime := time.Now()
 	var tickStartTime time.Time
@@ -26,26 +31,21 @@ func (s *Server) gameLoopThread() {
 			s.readIncomingMessages()
 			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
-			fmt.Printf("Time to process tick: %v\n", processingTime)
+			slog.With("tick", processingTime).Debug("time to process tick")
 		}
 
 		// Yield to other goroutines
 		time.Sleep(time.Millisecond)
 	}
-
 }
 
 func (s *Server) readIncomingMessages() {
-	for {
-		select {
-		case msg := <-s.ReceiveMessagesChannel:
-			// fmt.Println("Case message")
-			s.MessagesToProcess = append(s.MessagesToProcess, msg)
-			// fmt.Println(len(s.ReceiveMessagesChannel))
-		default:
-			// fmt.Println("Case default")
-			// No more messages available without blocking
-			return
-		}
+	select {
+	case msg := <-s.ReceiveMessagesChannel:
+		// fmt.Println("Case message")
+		s.MessagesToProcess = append(s.MessagesToProcess, msg)
+	// fmt.Println(len(s.ReceiveMessagesChannel))
+	default:
+		return
 	}
 }

@@ -22,5 +22,4 @@ func GetConfiguration() *Configuration {
 	}
 
 	return &Configuration{}
-
 }

@@ -8,21 +8,17 @@ import (
 )
 
 func (s *Server) networkThread() {
-
-	defer s.ThreadWaitGroup.Done()
+	defer s.threadWaitGroup.Done()
 
 	for ok := true; ok; ok = !s.Quit {
 		gns.RunCallbacks()
 		s.pollForIncomingMessages()
 		// s.sendQueuedMessages()
 		time.Sleep(time.Millisecond)
-
 	}
-
 }
 
 func (s *Server) pollForIncomingMessages() {
-
 	for ok := true; ok; ok = !s.Quit {
 
 		messages := make([]*gns.Message, 1)

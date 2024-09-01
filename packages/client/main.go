@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/arr-n-d/gns"
 )
@@ -16,11 +17,21 @@ func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 
 	case gns.ConnectionStateConnected:
 		fmt.Println("Connected")
-		str := "Hello, world!"
-		_, res := info.Conn().SendMessage([]byte(str), gns.SendReliable)
-		if res != gns.ResultOK {
-			fmt.Println("Issue fault")
+
+		baseMessage := "Hello, world! Sequence: "
+
+		for i := 1; i <= 500; i++ {
+			// Create the message with a sequence number
+			message := baseMessage + strconv.Itoa(i)
+
+			// Send the message
+			_, res := info.Conn().SendMessage([]byte(message), gns.SendReliable)
+
+			if res != gns.ResultOK {
+				fmt.Println("Issue fault")
+			}
 		}
+
 		fmt.Println("Sent data")
 
 	case gns.ConnectionStateProblemDetectedLocally:

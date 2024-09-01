@@ -17,7 +17,7 @@ type Server struct {
 	ThreadWaitGroup        sync.WaitGroup
 	ReceiveMessagesChannel chan []byte
 	SendMessagesChannel    chan []byte
-	MessagesToProcess      chan []byte
+	MessagesToProcess      [][]byte
 
 	// Pointer to DB
 }

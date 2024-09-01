@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/arr-n-d/gns"
-	"github.com/getsentry/sentry-go"
 )
 
 type Server struct {
@@ -26,43 +24,6 @@ func (s *Server) init() {
 	s.ThreadWaitGroup.Add(1)
 	go s.networkThread()
 	go s.gameLoopThread()
-}
-
-func (s *Server) networkThread() {
-
-	defer s.ThreadWaitGroup.Done()
-
-	for ok := true; ok; ok = !s.Quit {
-		gns.RunCallbacks()
-		s.pollForIncomingMessages()
-		// s.sendQueuedMessages()
-		time.Sleep(time.Millisecond)
-
-	}
-
-}
-
-func (s *Server) pollForIncomingMessages() {
-
-	for ok := true; ok; ok = !s.Quit {
-
-		messages := make([]*gns.Message, 1)
-
-		mSuccess := s.PollGroup.ReceiveMessages(messages)
-
-		if mSuccess == 0 {
-			break
-		}
-
-		if mSuccess < 0 {
-			sentry.CaptureMessage("Failed to receive messages")
-		}
-
-		mPayload := make([]byte, len(messages[0].Payload()))
-		copy(mPayload, messages[0].Payload())
-		messages[0].Release()
-		s.ReceiveMessagesChannel <- mPayload
-	}
 }
 
 func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {

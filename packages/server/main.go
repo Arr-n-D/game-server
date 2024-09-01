@@ -13,8 +13,14 @@ import (
 )
 
 func setupLogger() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
+	logLevel := &slog.LevelVar{}
+	conf := configuration.GetConfiguration()
+	logLevel.Set(conf.LogLevel)
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+	})))
+
 }
 
 func main() {

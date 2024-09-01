@@ -1,9 +1,12 @@
 package configuration
 
+import "log/slog"
+
 type Configuration struct {
 	DBConf         DatabaseConfiguration
 	Env            string
 	GameServerPort uint16
+	LogLevel       slog.Level
 }
 
 type DatabaseConfiguration struct {
@@ -18,6 +21,7 @@ func GetConfiguration() *Configuration {
 		return &Configuration{
 			Env:            env,
 			GameServerPort: 27015,
+			LogLevel:       slog.LevelDebug,
 		}
 	}
 

@@ -13,20 +13,19 @@ func (s *Server) gameLoopThread() {
 	defer s.ThreadWaitGroup.Done()
 
 	lastTickTime := time.Now()
-	// var tickStartTime time.Time
-	// var processingTime time.Duration
+	var tickStartTime time.Time
+	var processingTime time.Duration
 
 	for ok := true; ok; ok = !s.Quit {
 		currentTime := time.Now()
 		deltaTime := currentTime.Sub(lastTickTime)
 
 		if deltaTime >= tickDuration {
-			// tickStartTime = time.Now()
-			// Process stuff here
+			tickStartTime = time.Now()
 			s.readIncomingMessages()
-			// processingTime = time.Since(tickStartTime)
+			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
-			// fmt.Printf("Time to process tick: %v\n", processingTime)
+			fmt.Printf("Time to process tick: %v\n", processingTime)
 		}
 
 		// Yield to other goroutines
@@ -39,21 +38,9 @@ func (s *Server) readIncomingMessages() {
 	for {
 		select {
 		case msg := <-s.ReceiveMessagesChannel:
-			// fmt.Println("Case message")
 			s.MessagesToProcess = append(s.MessagesToProcess, msg)
-			// fmt.Println(len(s.ReceiveMessagesChannel))
 		default:
-			// fmt.Println("Case default")
-			// No more messages available without blocking
 			return
-		}
-
-		for i := 0; i < len(s.MessagesToProcess); i++ {
-			// fmt.Print("Printing message")
-			fmt.Println(string(s.MessagesToProcess[i]))
-
-			s.MessagesToProcess = append(s.MessagesToProcess[:i], s.MessagesToProcess[i+1:]...)
-
 		}
 	}
 }

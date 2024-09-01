@@ -20,7 +20,7 @@ func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 
 		baseMessage := "Hello, world! Sequence: "
 
-		for i := 1; i <= 500; i++ {
+		for i := 1; i <= 5000; i++ {
 			// Create the message with a sequence number
 			message := baseMessage + strconv.Itoa(i)
 

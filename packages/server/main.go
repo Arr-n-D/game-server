@@ -39,6 +39,7 @@ func main() {
 	defer gns.Kill()
 
 	if err := server.Start(conf); err != nil {
+		sentry.CaptureException(err)
 		slog.Error("server failed", slog.Any("error", err))
 		os.Exit(1)
 	}

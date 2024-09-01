@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -26,13 +26,12 @@ func (s *Server) gameLoopThread() {
 			s.readIncomingMessages()
 			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
-			fmt.Printf("Time to process tick: %v\n", processingTime)
+			slog.With("tick", processingTime).Debug("time to process tick")
 		}
 
 		// Yield to other goroutines
 		time.Sleep(time.Millisecond)
 	}
-
 }
 
 func (s *Server) readIncomingMessages() {

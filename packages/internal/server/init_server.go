@@ -1,13 +1,16 @@
 package server
 
 import (
-	"internal/configuration"
+	"errors"
+	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"time"
 
+	"internal/configuration"
+
 	"github.com/arr-n-d/gns"
-	"github.com/getsentry/sentry-go"
 )
 
 var ServerInstance *Server
@@ -17,34 +20,44 @@ const (
 	tickDuration = time.Second / tickRate
 )
 
-func InitServer() {
-	configuration.InitSentry()
-	initGameNetworkingSockets()
-	initServer()
+func InitServer() error {
+	if err := configuration.InitSentry(); err != nil {
+		return fmt.Errorf("failed to initialize sentry. %w", err)
+	}
+	if err := initGameNetworkingSockets(); err != nil {
+		return fmt.Errorf("failed to initialize game networking sockets. %w", err)
+	}
+	if err := initServer(); err != nil {
+		return fmt.Errorf("failed to initServer. %w", err)
+	}
 
 	gns.SetGlobalCallbackStatusChanged(ServerInstance.StatusCallBackChanged)
 
 	ServerInstance.init()
+	return nil
 }
 
-func initGameNetworkingSockets() {
+func initGameNetworkingSockets() error {
 	err := gns.Init(nil)
-
 	if err != nil {
-		log.Fatal(err)
-		sentry.CaptureException(err)
+		return fmt.Errorf("gns.Init failed: %w", err)
 	}
-
+	return nil
 }
 
 func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
 	gns.SetDebugOutputFunction(detailLevel, func(typ gns.DebugOutputType, msg string) {
+		slog.With("type", typ, "msg", msg).Debug("[DEBUG]")
 		log.Print("[DEBUG] ", typ, msg)
 	})
 }
 
-func initServer() {
+func initServer() error {
 	conf := configuration.GetConfiguration()
+
+	if conf.Env == "" {
+		return errors.New("no configuration found")
+	}
 
 	if conf.Env == configuration.DevEnv {
 		setDebugOutputFunction(gns.DebugOutputTypeEverything)
@@ -56,16 +69,13 @@ func initServer() {
 	},
 		nil,
 	)
-
 	if err != nil {
-		sentry.CaptureException(err)
-		log.Fatalf("Failed to listen on port %d", conf.GameServerPort)
+		return fmt.Errorf("failed to listen on port %d. %w", conf.GameServerPort, err)
 	}
 
 	poll := gns.NewPollGroup()
 	if poll == gns.InvalidPollGroup {
-		sentry.CaptureMessage("Failed to create poll group")
-		log.Fatal("Invalid poll group")
+		return errors.New("failed to create poll group")
 	}
 
 	ServerInstance = &Server{
@@ -75,5 +85,5 @@ func initServer() {
 		ReceiveMessagesChannel: make(chan []byte, 200),
 		SendMessagesChannel:    make(chan []byte, 200),
 	}
-
+	return nil
 }

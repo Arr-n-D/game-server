@@ -1,8 +1,7 @@
 package server
 
 import (
-	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/arr-n-d/gns"
@@ -29,17 +28,16 @@ func (s *Server) init() {
 func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	switch state := info.Info().State(); state {
 	case gns.ConnectionStateConnected:
-		fmt.Println("Accepted connection")
+		slog.Debug("accepted connection")
 	case gns.ConnectionStateConnecting:
-		fmt.Println("Connecting")
+		slog.Debug("connecting")
 		conn := info.Conn()
 		if conn.Accept() != gns.ResultOK {
-			log.Fatalln("Failed to accept client")
+			slog.Error("failed to accept client")
 		}
 
 		if !conn.SetPollGroup(s.PollGroup) {
-			log.Fatalln("Failed to set poll group")
+			slog.Error("failed to set poll group")
 		}
 	}
-
 }

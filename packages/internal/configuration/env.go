@@ -13,7 +13,7 @@ func GetEnv() string {
 	env := os.Getenv("ENV")
 
 	if env == "" {
-		panic("No environment found")
+		return ""
 	}
 
 	return env

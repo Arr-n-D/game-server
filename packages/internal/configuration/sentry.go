@@ -1,13 +1,18 @@
 package configuration
 
 import (
-	"log"
+	"errors"
+	"fmt"
 
 	"github.com/getsentry/sentry-go"
 )
 
-func InitSentry() {
+func InitSentry() error {
 	env := GetEnv()
+	if env == "" {
+		return errors.New("no environment found")
+	}
+
 	Dsn := "https://9c07d825e55089ba0cc8a6ad43489f7b@o4507852124323840.ingest.de.sentry.io/4507852128059472"
 	var clientOptions sentry.ClientOptions
 
@@ -27,8 +32,9 @@ func InitSentry() {
 
 	err := sentry.Init(clientOptions)
 	if err != nil {
-		log.Fatalf("sentry.Init: %s", err)
+		return fmt.Errorf("sentry.Init: %w", err)
 	}
 
+	return nil
 	// sentry.CaptureMessage("Hello!")
 }

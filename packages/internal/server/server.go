@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"internal/configuration"
+	"internal/messages"
 
 	"github.com/arr-n-d/gns"
-	"github.com/ugorji/go/codec"
 )
 
 type Server struct {
@@ -18,10 +18,10 @@ type Server struct {
 	listener               *gns.Listener
 	Quit                   bool
 	threadWaitGroup        sync.WaitGroup
-	ReceiveMessagesChannel chan []byte
-	SendMessagesChannel    chan []byte
+	ReceiveMessagesChannel chan messages.Message
+	SendMessagesChannel    chan messages.Message
 	MessagesToProcess      [][]byte
-	MsgPackHandler         codec.MsgpackHandle
+	// MsgPackHandler         codec.MsgpackHandle
 	// Pointer to DB
 }
 
@@ -49,8 +49,8 @@ func Start(conf *configuration.Configuration) error {
 		PollGroup:              poll,
 		listener:               l,
 		Quit:                   false,
-		ReceiveMessagesChannel: make(chan []byte, 200),
-		SendMessagesChannel:    make(chan []byte, 200),
+		ReceiveMessagesChannel: make(chan messages.Message, 200),
+		SendMessagesChannel:    make(chan messages.Message, 200),
 	}
 
 	gns.SetGlobalCallbackStatusChanged(serverInstance.StatusCallBackChanged)

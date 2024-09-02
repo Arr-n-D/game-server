@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"internal/messages"
 
 	"github.com/arr-n-d/gns"
@@ -39,31 +38,24 @@ func (s *Server) pollForIncomingMessages() {
 		}
 
 		var msg messages.Message
-		var msg2 messages.Sequence
+		// var msg2 messages.Sequence
 		var handler codec.MsgpackHandle
+
 		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &handler)
 		err := decoder.Decode(&msg)
-		if err != nil {
-			panic("Foobar")
-		}
-
-		fmt.Println(msg.MessageContent)
-
-		decoder = codec.NewDecoderBytes(msg.MessageContent, &handler)
-		err = decoder.Decode(&msg2)
-		if err != nil {
-			panic("Foobar")
-		}
-
-		fmt.Println(msg2.Message)
-		// mPayloadData := messages[0].Payload()
-		// fmt.Println(string(mPayloadData))
 		messagesPtr[0].Release()
-		// bytes.NewBuffer(mPayloadData)
+		if err != nil {
+			// panic("Foobar")
+		}
 
-		// msgpack.Unmarshal(mPayloadData, item)
-		// fmt.Println(item)
+		// decoder = codec.NewDecoderBytes(msg.MessageContent, &handler)
+		// err = decoder.Decode(&msg2)
+		// if err != nil {
+		// 	panic("Foobar")
+		// }
 
-		// s.ReceiveMessagesChannel <- mPayload
+		// fmt.Println(msg2.Message)
+
+		s.ReceiveMessagesChannel <- msg
 	}
 }

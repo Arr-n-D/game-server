@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/arr-n-d/gns"
-	"github.com/vmihailenco/msgpack/v5"
+	"github.com/ugorji/go/codec"
 )
 
 const (
@@ -94,17 +94,18 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 	baseMessage := fmt.Sprintf("Player %d, Sequence: ", playerID)
 	for i := 1; i <= MessagesPerPlayer; i++ {
 		message := baseMessage + strconv.Itoa(i)
-		var buf bytes.Buffer
-		enc := msgpack.NewEncoder(&buf)
-		enc.UseArrayEncodedStructs(true)
-
-		err := enc.Encode(&Item{
+		var handler codec.MsgpackHandle
+		item := &Item{
 			Foo: message,
-		})
-		if err != nil {
-			panic(err)
 		}
-		_, res := connection.SendMessage([]byte(buf.Bytes()), gns.SendReliable)
+
+		buff := new(bytes.Buffer)
+		encoder := codec.NewEncoder(buff, &handler)
+		err := encoder.Encode(item)
+		if err != nil {
+			panic("Foobar")
+		}
+		_, res := connection.SendMessage(buff.Bytes(), gns.SendReliable)
 		if res != gns.ResultOK {
 			fmt.Printf("Player %d: Issue fault on message %d\n", playerID, i)
 		}

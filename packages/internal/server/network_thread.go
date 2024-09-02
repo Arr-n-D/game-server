@@ -1,12 +1,11 @@
 package server
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/arr-n-d/gns"
 	"github.com/getsentry/sentry-go"
-	"github.com/vmihailenco/msgpack/v5"
+	"github.com/ugorji/go/codec"
 )
 
 func (s *Server) networkThread() {
@@ -37,14 +36,23 @@ func (s *Server) pollForIncomingMessages() {
 		if mSuccess < 0 {
 			sentry.CaptureMessage("Failed to receive messages")
 		}
+
 		var item Item
-		mPayloadData := messages[0].Payload()
+		var handler codec.MsgpackHandle
+		decoder := codec.NewDecoderBytes(messages[0].Payload(), &handler)
+		err := decoder.Decode(&item)
+		if err != nil {
+			panic("Foobar")
+		}
 
-		bytes.NewBuffer(mPayloadData)
-
-		msgpack.Unmarshal(mPayloadData, item)
-		fmt.Println(item)
 		messages[0].Release()
+		fmt.Println(item.Foo)
+		// mPayloadData := messages[0].Payload()
+		// fmt.Println(string(mPayloadData))
+		// bytes.NewBuffer(mPayloadData)
+
+		// msgpack.Unmarshal(mPayloadData, item)
+		// fmt.Println(item)
 
 		// s.ReceiveMessagesChannel <- mPayload
 	}

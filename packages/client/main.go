@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"math/rand"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/arr-n-d/gns"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 const (
@@ -18,6 +20,10 @@ const (
 	MessagesPerPlayer = 150 // 5 seconds worth of messages at 30 per second
 	TotalDuration     = 5 * time.Second
 )
+
+type Item struct {
+	Foo string
+}
 
 func StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	switch state := info.Info().State(); state {
@@ -88,7 +94,17 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 	baseMessage := fmt.Sprintf("Player %d, Sequence: ", playerID)
 	for i := 1; i <= MessagesPerPlayer; i++ {
 		message := baseMessage + strconv.Itoa(i)
-		_, res := connection.SendMessage([]byte(message), gns.SendReliable)
+		var buf bytes.Buffer
+		enc := msgpack.NewEncoder(&buf)
+		enc.UseArrayEncodedStructs(true)
+
+		err := enc.Encode(&Item{
+			Foo: message,
+		})
+		if err != nil {
+			panic(err)
+		}
+		_, res := connection.SendMessage([]byte(buf.Bytes()), gns.SendReliable)
 		if res != gns.ResultOK {
 			fmt.Printf("Player %d: Issue fault on message %d\n", playerID, i)
 		}

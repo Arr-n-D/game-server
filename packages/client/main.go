@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"internal/messages"
 	"log"
 	"math/rand"
 	"net"
@@ -95,17 +96,31 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 	for i := 1; i <= MessagesPerPlayer; i++ {
 		message := baseMessage + strconv.Itoa(i)
 		var handler codec.MsgpackHandle
-		item := &Item{
-			Foo: message,
+		sequence := &messages.Sequence{
+			Message: message,
 		}
 
 		buff := new(bytes.Buffer)
 		encoder := codec.NewEncoder(buff, &handler)
-		err := encoder.Encode(item)
+		err := encoder.Encode(sequence)
+
 		if err != nil {
 			panic("Foobar")
 		}
-		_, res := connection.SendMessage(buff.Bytes(), gns.SendReliable)
+
+		msgToSend := &messages.Message{
+			MessageContent: buff.Bytes(),
+		}
+
+		newBuff := new(bytes.Buffer)
+		newEncoder := codec.NewEncoder(newBuff, &handler)
+		err = newEncoder.Encode(msgToSend)
+
+		if err != nil {
+			panic("Foobar")
+		}
+
+		_, res := connection.SendMessage(newBuff.Bytes(), gns.SendReliable)
 		if res != gns.ResultOK {
 			fmt.Printf("Player %d: Issue fault on message %d\n", playerID, i)
 		}

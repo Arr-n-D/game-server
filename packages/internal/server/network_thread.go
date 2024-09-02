@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"internal/messages"
 
 	"github.com/arr-n-d/gns"
 	"github.com/getsentry/sentry-go"
@@ -25,9 +26,9 @@ type Item struct {
 func (s *Server) pollForIncomingMessages() {
 	for !s.Quit {
 
-		messages := make([]*gns.Message, 1)
+		messagesPtr := make([]*gns.Message, 1)
 
-		mSuccess := s.PollGroup.ReceiveMessages(messages)
+		mSuccess := s.PollGroup.ReceiveMessages(messagesPtr)
 
 		if mSuccess == 0 {
 			break
@@ -37,18 +38,27 @@ func (s *Server) pollForIncomingMessages() {
 			sentry.CaptureMessage("Failed to receive messages")
 		}
 
-		var item Item
+		var msg messages.Message
+		var msg2 messages.Sequence
 		var handler codec.MsgpackHandle
-		decoder := codec.NewDecoderBytes(messages[0].Payload(), &handler)
-		err := decoder.Decode(&item)
+		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &handler)
+		err := decoder.Decode(&msg)
 		if err != nil {
 			panic("Foobar")
 		}
 
-		messages[0].Release()
-		fmt.Println(item.Foo)
+		fmt.Println(msg.MessageContent)
+
+		decoder = codec.NewDecoderBytes(msg.MessageContent, &handler)
+		err = decoder.Decode(&msg2)
+		if err != nil {
+			panic("Foobar")
+		}
+
+		fmt.Println(msg2.Message)
 		// mPayloadData := messages[0].Payload()
 		// fmt.Println(string(mPayloadData))
+		messagesPtr[0].Release()
 		// bytes.NewBuffer(mPayloadData)
 
 		// msgpack.Unmarshal(mPayloadData, item)

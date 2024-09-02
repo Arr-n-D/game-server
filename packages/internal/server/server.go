@@ -10,6 +10,7 @@ import (
 	"internal/configuration"
 
 	"github.com/arr-n-d/gns"
+	"github.com/ugorji/go/codec"
 )
 
 type Server struct {
@@ -20,7 +21,7 @@ type Server struct {
 	ReceiveMessagesChannel chan []byte
 	SendMessagesChannel    chan []byte
 	MessagesToProcess      [][]byte
-
+	MsgPackHandler         codec.MsgpackHandle
 	// Pointer to DB
 }
 

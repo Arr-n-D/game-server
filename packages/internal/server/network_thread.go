@@ -38,10 +38,8 @@ func (s *Server) pollForIncomingMessages() {
 		}
 
 		var msg messages.Message
-		// var msg2 messages.Sequence
-		var handler codec.MsgpackHandle
-
-		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &handler)
+		
+		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &s.MsgPackHandler)
 		err := decoder.Decode(&msg)
 		messagesPtr[0].Release()
 		if err != nil {

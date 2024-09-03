@@ -11,6 +11,7 @@ import (
 	"internal/messages"
 
 	"github.com/arr-n-d/gns"
+	"github.com/ugorji/go/codec"
 )
 
 type Server struct {
@@ -20,8 +21,8 @@ type Server struct {
 	threadWaitGroup        sync.WaitGroup
 	ReceiveMessagesChannel chan messages.Message
 	SendMessagesChannel    chan messages.Message
-	MessagesToProcess      [][]byte
-	// MsgPackHandler         codec.MsgpackHandle
+	MessagesToProcess      []messages.Message
+	MsgPackHandler         codec.MsgpackHandle
 	// Pointer to DB
 }
 

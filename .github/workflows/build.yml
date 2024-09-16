@@ -24,6 +24,14 @@ jobs:
           token: ${{ github.token }}
           branch: develop
 
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v.10.2
+        with:
+          token: ${{ github.token }}
+          tag: ${{ steps.semver.outputs.next }}
+          writeToFile: false
+
       - name: Create Release
         uses: ncipollo/release-action@v1.14.0
         with:
@@ -32,5 +40,5 @@ jobs:
           makeLatest: true
           name: ${{ steps.semver.outputs.next }}
           tag: ${{ steps.semver.outputs.next }}
-          body: Changelog Contents F
+          body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}

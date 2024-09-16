@@ -50,7 +50,7 @@ jobs:
           allowUpdates: true
           draft: false
           makeLatest: true
-          tag: ${{ steps.semver.outputs.next }}
-          name: ${{ steps.semver.outputs.next }}
+          tag: ${{ steps.semver.outputs.next }}-dev
+          name: ${{ steps.semver.outputs.next }}-dev
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}

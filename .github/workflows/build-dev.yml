@@ -31,8 +31,8 @@ jobs:
           prerelease: true
           draft: false
           commit: ${{ github.sha }}
-          tag: ${{ steps.semver.outputs.next }}
-          name: ${{ steps.semver.outputs.next }}
+          tag: ${{ steps.semver.outputs.next }}-dev
+          name: ${{ steps.semver.outputs.next }}-dev
           body: '*pending*'
           token: ${{ github.token }}
 

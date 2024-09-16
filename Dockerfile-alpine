@@ -37,4 +37,4 @@ COPY --from=build-valve-sockets /sockets/gns/lib/GameNetworkingSockets/build/bin
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 COPY . /app/
-# RUN go run /app/packages/server/main.go
+RUN go run /app/packages/server/main.go

@@ -11,6 +11,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Do something
+        run: |
+          echo ${GITHUB_REF}  
+
       - name: Get Next Version
         id: semver
         uses: ietf-tools/semver-action@v1

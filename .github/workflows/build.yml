@@ -29,5 +29,6 @@ jobs:
           draft: false
           makeLatest: true
           name: ${{ steps.semver.outputs.next }}
+          tag: ${{ steps.semver.outputs.next }}
           body: Changelog Contents F
           token: ${{ github.token }}

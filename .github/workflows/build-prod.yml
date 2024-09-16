@@ -1,21 +1,21 @@
-name: Deploy
+name: Production Build and Release 
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    environment:
+      name: production
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Do something
-        run: |
-          echo ${GITHUB_REF}  
 
       - name: Get Next Version
         id: semver

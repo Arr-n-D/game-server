@@ -24,6 +24,17 @@ jobs:
           token: ${{ github.token }}
           branch: develop
 
+      - name: Create Draft Release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          prerelease: true
+          draft: false
+          commit: ${{ github.sha }}
+          tag: ${{ steps.semver.outputs.next }}
+          name: ${{ steps.semver.outputs.next }}
+          body: '*pending*'
+          token: ${{ github.token }}
+
       - name: Update CHANGELOG
         id: changelog
         uses: requarks/changelog-action@v1.10.2
@@ -38,7 +49,7 @@ jobs:
           allowUpdates: true
           draft: false
           makeLatest: true
-          name: ${{ steps.semver.outputs.next }}
           tag: ${{ steps.semver.outputs.next }}
+          name: ${{ steps.semver.outputs.next }}
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}

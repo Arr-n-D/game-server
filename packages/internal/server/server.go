@@ -1,72 +1,32 @@
 package server
 
 import (
+	"errors"
 	"fmt"
-	"internal/configuration"
-	"log"
+	"log/slog"
 	"net"
-	"time"
+	"sync"
+
+	"internal/configuration"
+	"internal/messages"
 
 	"github.com/arr-n-d/gns"
-	"github.com/getsentry/sentry-go"
+	"github.com/ugorji/go/codec"
 )
 
-var ServerInstance *Server
-
 type Server struct {
-	PollGroup gns.PollGroup
-	listener  *gns.Listener
-	Quit      bool
-
+	PollGroup              gns.PollGroup
+	listener               *gns.Listener
+	Quit                   bool
+	threadWaitGroup        sync.WaitGroup
+	ReceiveMessagesChannel chan messages.Message
+	SendMessagesChannel    chan messages.Message
+	MessagesToProcess      []messages.Message
+	MsgPackHandler         codec.MsgpackHandle
 	// Pointer to DB
 }
 
-func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
-	switch state := info.Info().State(); state {
-	case gns.ConnectionStateConnecting:
-		fmt.Println("Connecting")
-		conn := info.Conn()
-		if conn.Accept() != gns.ResultOK {
-			log.Fatalln("Failed to accept client")
-		}
-
-		if !conn.SetPollGroup(s.PollGroup) {
-			log.Fatalln("Failed to set poll group")
-		}
-
-	}
-
-}
-
-func InitServer() {
-	configuration.InitSentry()
-	initGameNetworkingSockets()
-	initServer()
-
-	gns.SetGlobalCallbackStatusChanged(ServerInstance.StatusCallBackChanged)
-	ServerInstance.pollForIncomingMessages()
-	ServerInstance.runCallbacks()
-}
-
-func initGameNetworkingSockets() {
-	err := gns.Init(nil)
-
-	if err != nil {
-		log.Fatal(err)
-		sentry.CaptureException(err)
-	}
-
-}
-
-func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
-	gns.SetDebugOutputFunction(detailLevel, func(typ gns.DebugOutputType, msg string) {
-		log.Print("[DEBUG] ", typ, msg)
-	})
-}
-
-func initServer() {
-	conf := configuration.GetConfiguration()
-
+func Start(conf *configuration.Configuration) error {
 	if conf.Env == configuration.DevEnv {
 		setDebugOutputFunction(gns.DebugOutputTypeEverything)
 	}
@@ -77,37 +37,55 @@ func initServer() {
 	},
 		nil,
 	)
-
 	if err != nil {
-		sentry.CaptureException(err)
-		log.Fatalf("Failed to listen on port %d", conf.GameServerPort)
+		return fmt.Errorf("failed to listen on port %d. %w", conf.GameServerPort, err)
 	}
 
 	poll := gns.NewPollGroup()
 	if poll == gns.InvalidPollGroup {
-		sentry.CaptureMessage("Failed to create poll group")
-		log.Fatal("Invalid poll group")
+		return errors.New("failed to create poll group")
 	}
 
-	ServerInstance = &Server{
-		PollGroup: poll,
-		listener:  l,
-		Quit:      false,
+	serverInstance := &Server{
+		PollGroup:              poll,
+		listener:               l,
+		Quit:                   false,
+		ReceiveMessagesChannel: make(chan messages.Message, 200),
+		SendMessagesChannel:    make(chan messages.Message, 200),
 	}
 
+	gns.SetGlobalCallbackStatusChanged(serverInstance.StatusCallBackChanged)
+
+	serverInstance.Start()
+	return nil
 }
 
-func (s *Server) pollForIncomingMessages() {
-	go func() {
-		for ok := true; ok; ok = !s.Quit {
-			fmt.Println("Incoming messages go routine")
-			time.Sleep(time.Second * 15)
+func setDebugOutputFunction(detailLevel gns.DebugOutputType) {
+	gns.SetDebugOutputFunction(detailLevel, func(typ gns.DebugOutputType, msg string) {
+		slog.With("type", typ, "msg", msg).Debug("[DEBUG]")
+	})
+}
+
+func (s *Server) Start() {
+	s.threadWaitGroup.Add(2)
+	go s.networkThread()
+	go s.gameLoopThread()
+	s.threadWaitGroup.Wait()
+}
+
+func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
+	switch state := info.Info().State(); state {
+	case gns.ConnectionStateConnected:
+		slog.Debug("accepted connection")
+	case gns.ConnectionStateConnecting:
+		slog.Debug("connecting")
+		conn := info.Conn()
+		if conn.Accept() != gns.ResultOK {
+			slog.Error("failed to accept client")
 		}
-	}()
-}
 
-func (s *Server) runCallbacks() {
-	for ok := true; ok; ok = !s.Quit {
-		gns.RunCallbacks()
+		if !conn.SetPollGroup(s.PollGroup) {
+			slog.Error("failed to set poll group")
+		}
 	}
 }

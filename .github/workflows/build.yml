@@ -1,10 +1,10 @@
-name: Production Build and Release 
+name: Build and Release 
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - 'master'
+      - 'develop'
 
 jobs:
   deploy:
@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
     environment:
-      name: production
+      name: development
 
     steps:
       - name: Checkout Code

@@ -17,13 +17,16 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         shell: bash
-        run: git fetch --tags -f
+        run: git fetch --tags -f 
+
       - name: Autotag
         uses: DanySK/semver-autotag-action@master
+        
       - name: Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          sudo apt-get update && sudo apt-get install -y hub
           TAG=$(git describe --tags --exact-match HEAD)
           hub release create -m "$(git tag -l --format='%(contents)' "$TAG")" "$TAG" || true
           hub release edit -m '' -a a_file "$TAG"

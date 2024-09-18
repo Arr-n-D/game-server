@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"internal/configuration"
@@ -38,6 +42,8 @@ func main() {
 	}
 	defer sentry.Flush(5 * time.Second)
 
+	localInput()
+
 	if err := gns.Init(nil); err != nil {
 		slog.Error("failed to initialize gns", slog.Any("error", err))
 		os.Exit(1)
@@ -49,4 +55,22 @@ func main() {
 		slog.Error("server failed", slog.Any("error", err))
 		os.Exit(1)
 	}
+}
+
+func localInput() {
+	go func() {
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			s, err := reader.ReadString('\n')
+			s = strings.TrimSpace(s)
+			if err != nil {
+				if err != io.EOF {
+					fmt.Println("Error reading from stdin:", err)
+				}
+				return
+			}
+
+			// Process the input here instead of sending it to another goroutine
+		}
+	}()
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 	"sync"
 
 	"internal/configuration"
@@ -23,6 +24,7 @@ type Server struct {
 	SendMessagesChannel    chan messages.Message
 	MessagesToProcess      []messages.Message
 	MsgPackHandler         codec.MsgpackHandle
+	DebugMode              bool
 	// Pointer to DB
 }
 
@@ -52,6 +54,13 @@ func Start(conf *configuration.Configuration) error {
 		Quit:                   false,
 		ReceiveMessagesChannel: make(chan messages.Message, 200),
 		SendMessagesChannel:    make(chan messages.Message, 200),
+		DebugMode:              false,
+	}
+
+	dbgMode := os.Getenv("DEBUG")
+
+	if dbgMode == "true" {
+		serverInstance.DebugMode = true
 	}
 
 	gns.SetGlobalCallbackStatusChanged(serverInstance.StatusCallBackChanged)
@@ -82,10 +91,12 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 		conn := info.Conn()
 		if conn.Accept() != gns.ResultOK {
 			slog.Error("failed to accept client")
+			break
 		}
 
 		if !conn.SetPollGroup(s.PollGroup) {
 			slog.Error("failed to set poll group")
+			break
 		}
 	}
 }

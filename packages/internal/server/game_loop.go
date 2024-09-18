@@ -17,7 +17,7 @@ func (s *Server) gameLoopThread() {
 	var tickStartTime time.Time
 	var processingTime time.Duration
 
-	for ok := true; ok; ok = !s.Quit {
+	for !s.Quit {
 		currentTime := time.Now()
 		deltaTime := currentTime.Sub(lastTickTime)
 
@@ -27,7 +27,9 @@ func (s *Server) gameLoopThread() {
 			s.readIncomingMessages()
 			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
-			slog.With("tick", processingTime).Debug("time to process tick")
+			if s.DebugMode {
+				slog.With("tick", processingTime).Debug("time to process tick")
+			}
 		}
 
 		// Yield to other goroutines

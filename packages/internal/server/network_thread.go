@@ -35,10 +35,11 @@ func (s *Server) pollForIncomingMessages() {
 
 		if mSuccess < 0 {
 			sentry.CaptureMessage("Failed to receive messages")
+			panic("Failed to receive messages")
 		}
 
 		var msg messages.Message
-		
+
 		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &s.MsgPackHandler)
 		err := decoder.Decode(&msg)
 		messagesPtr[0].Release()

@@ -9,12 +9,15 @@ import (
 	"sync"
 
 	"internal/configuration"
+	"internal/database"
 	"internal/messages"
 
 	"github.com/arr-n-d/gns"
 	"github.com/ugorji/go/codec"
+	"gorm.io/gorm"
 )
 
+// TODO: #11 Refactor Server to split things separately. Server shouldn't know about DebugMode or MsgPackHandler or even threadWaitGroup.
 type Server struct {
 	PollGroup              gns.PollGroup
 	listener               *gns.Listener
@@ -25,7 +28,7 @@ type Server struct {
 	MessagesToProcess      []messages.Message
 	MsgPackHandler         codec.MsgpackHandle
 	DebugMode              bool
-	// Pointer to DB
+	DB                     *gorm.DB
 }
 
 func Start(conf *configuration.Configuration) error {
@@ -48,6 +51,8 @@ func Start(conf *configuration.Configuration) error {
 		return errors.New("failed to create poll group")
 	}
 
+	database.InitDatabase()
+
 	serverInstance := &Server{
 		PollGroup:              poll,
 		listener:               l,
@@ -55,6 +60,7 @@ func Start(conf *configuration.Configuration) error {
 		ReceiveMessagesChannel: make(chan messages.Message, 200),
 		SendMessagesChannel:    make(chan messages.Message, 200),
 		DebugMode:              false,
+		DB:                     database.DATABASE,
 	}
 
 	dbgMode := os.Getenv("DEBUG")

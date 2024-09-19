@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	DevEnv  = "dev"
-	ProdEnv = "prod"
+	DevEnv   = "dev"
+	ProdEnv  = "prod"
+	LocalEnv = "local"
 )
 
 func GetEnv() string {
@@ -17,4 +18,12 @@ func GetEnv() string {
 	}
 
 	return env
+}
+
+func (conf *Configuration) IsDevEnv() bool {
+	return conf.Env == DevEnv
+}
+
+func (conf *Configuration) IsLocalEnv() bool {
+	return conf.Env == LocalEnv
 }

@@ -28,6 +28,7 @@ func setupLogger() {
 }
 
 func main() {
+	// TODO: #12 Move logger into internal @Arr-n-D
 	setupLogger()
 
 	conf := configuration.GetConfiguration()

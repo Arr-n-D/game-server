@@ -1,18 +1,19 @@
 package configuration
 
-import "log/slog"
+import (
+	"log/slog"
+	"os"
+)
 
-type Configuration struct {
-	DBConf         DatabaseConfiguration
-	Env            string
-	GameServerPort uint16
-	LogLevel       slog.Level
+type databaseSecrets struct {
 }
 
-type DatabaseConfiguration struct {
-	Host     string
-	Password string
-	Username string
+type Configuration struct {
+	Env             string
+	GameServerPort  uint16
+	LogLevel        slog.Level
+	AwsRegion       string
+	DatabaseSecrets databaseSecrets
 }
 
 func GetConfiguration() *Configuration {
@@ -22,8 +23,13 @@ func GetConfiguration() *Configuration {
 			Env:            env,
 			GameServerPort: 27015,
 			LogLevel:       slog.LevelDebug,
+			AwsRegion:      os.Getenv("AWS_REGION"),
 		}
 	}
 
 	return &Configuration{}
+}
+
+func (conf *Configuration) GetAwsRegion() string {
+	return conf.AwsRegion
 }

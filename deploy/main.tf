@@ -17,7 +17,7 @@ terraform {
     # For production, this value must be overridden via the
     # -backend-config="bucket= ... " command with the production bucket
     bucket         = "heavenly-dragons-terraform-dev-fib720"
-    dynamodb_table = "terraform-state-lock"
+    # dynamodb_table = "terraform-state-lock"
   }
 }
 

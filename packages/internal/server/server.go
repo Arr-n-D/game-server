@@ -31,10 +31,12 @@ type Server struct {
 	DB                     *gorm.DB
 }
 
+
 func Start(conf *configuration.Configuration) error {
 	if conf.Env == configuration.DevEnv {
 		setDebugOutputFunction(gns.DebugOutputTypeEverything)
 	}
+	
 
 	l, err := gns.Listen(&net.UDPAddr{
 		IP:   net.IP{127, 0, 0, 1},

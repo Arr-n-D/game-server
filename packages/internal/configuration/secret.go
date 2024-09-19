@@ -13,15 +13,16 @@ var (
 	smClient *secretsmanager.Client
 )
 
-func (conf *Configuration) FetchDatabaseSecrets() {
+func (conf *Configuration) FetchDatabaseSecrets() (databaseSecrets databaseSecrets, err error) {
     
 }
 
 func (conf *Configuration) getSecrets(name string) (string, error) {
+	
 	client := conf.()
 	env := conf.GetEnv()
 
-	secretId := env + "/backend/" + name
+	secretId := env + "/game-server/" + name
 
 	result, err := client.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{
 		SecretId:     aws.String(secretId),

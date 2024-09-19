@@ -1,1 +1,5 @@
 build
+
+# Terraform
+/deploy/.terraform.lock.hcl
+/deploy/.terraform/

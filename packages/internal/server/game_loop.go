@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"internal/messages"
 	"log/slog"
 	"time"
 )
@@ -25,6 +27,7 @@ func (s *Server) gameLoopThread() {
 			tickStartTime = time.Now()
 			// Process stuff here
 			s.readIncomingMessages()
+			processBatch(s.MessagesToProcess)
 			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
 			if s.DebugMode {
@@ -33,7 +36,7 @@ func (s *Server) gameLoopThread() {
 		}
 
 		// Yield to other goroutines
-		time.Sleep(time.Millisecond)
+		// time.Sleep(time.Millisecond)
 	}
 }
 
@@ -44,4 +47,27 @@ func (s *Server) readIncomingMessages() {
 	default:
 		return
 	}
+}
+
+func processTickData(message *messages.Message) bool {
+	// Simulate processing
+	fmt.Printf("Processing: %+v\n", *message)
+	return true // Return true if processed successfully
+}
+
+// TODO: #13 Two processing lanes, One for reliable and one for unreliable?
+func processBatch(slice []messages.Message) []messages.Message {
+	n := 0
+	for i := 0; i < len(slice); i++ {
+		if processTickData(&slice[i]) {
+			// Element processed, skip it
+			continue
+		}
+		// Element not processed, keep it
+		if i != n {
+			slice[n] = slice[i]
+		}
+		n++
+	}
+	return slice[:n]
 }

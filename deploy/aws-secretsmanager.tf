@@ -10,6 +10,6 @@ resource "aws_secretsmanager_secret" "db_secrets" {
 
 resource "aws_secretsmanager_secret_version" "db_secrets" {
   secret_id = aws_secretsmanager_secret.db_secrets.id
-  secret_string = random_password.master.result
+  secret_string = random_password.db_password.result
 }
 

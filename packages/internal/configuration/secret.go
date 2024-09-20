@@ -13,14 +13,14 @@ var (
 	smClient *secretsmanager.Client
 )
 
-func (conf *Configuration) FetchDatabaseSecrets() (databaseSecrets databaseSecrets, err error) {
-    
-}
+// func (conf *Configuration) FetchDatabaseSecrets() (databaseSecrets databaseSecrets, err error) {
+
+// }
 
 func (conf *Configuration) getSecrets(name string) (string, error) {
-	
-	client := conf.()
-	env := conf.GetEnv()
+
+	client := conf.getSmClient()
+	env := conf.Env
 
 	secretId := env + "/game-server/" + name
 

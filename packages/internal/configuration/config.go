@@ -25,6 +25,13 @@ func GetConfiguration() *Configuration {
 			LogLevel:       slog.LevelDebug,
 			AwsRegion:      os.Getenv("AWS_REGION"),
 		}
+	case LocalEnv:
+		return &Configuration{
+			Env:            env,
+			GameServerPort: 27015,
+			LogLevel:       slog.LevelDebug,
+			AwsRegion:      os.Getenv("AWS_REGION"),
+		}
 	}
 
 	return &Configuration{}

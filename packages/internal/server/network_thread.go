@@ -36,12 +36,16 @@ func (s *Server) pollForIncomingMessages() {
 
 		var msg messages.Message
 
+		// TODO: #14 Grab the information of the messagesPtr like the connection, user data, etc, and put it in message
 		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &s.MsgPackHandler)
 		err := decoder.Decode(&msg)
-		messagesPtr[0].Release()
+
 		if err != nil {
-			// panic("Foobar")
+			sentry.CaptureMessage("An error occured decoding a packet")
+			panic("An error occured decoding a packet") // THIS SHOULD NOT BE IN PRODUCTION. DEV ONLY
 		}
+
+		messagesPtr[0].Release()
 
 		// decoder = codec.NewDecoderBytes(msg.MessageContent, &handler)
 		// err = decoder.Decode(&msg2)

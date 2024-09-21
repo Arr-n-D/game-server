@@ -1,10 +1,11 @@
 package server
 
 import (
-	"fmt"
 	"internal/messages"
 	"log/slog"
 	"time"
+
+	"github.com/ugorji/go/codec"
 )
 
 const (
@@ -12,6 +13,8 @@ const (
 	tickDuration = time.Second / tickRate
 )
 
+
+// TODO: Read channel of 5000 size. If we're at 80% of threshold, start several Goroutines with batching on the processing
 func (s *Server) gameLoopThread() {
 	defer s.threadWaitGroup.Done()
 
@@ -26,8 +29,9 @@ func (s *Server) gameLoopThread() {
 		if deltaTime >= tickDuration {
 			tickStartTime = time.Now()
 			// Process stuff here
-			s.readIncomingMessages()
-			processBatch(s.MessagesToProcess)
+			s.readIncomingMessages(200)
+			// slog.With("Size", len(s.MessagesToProcess)).Info("Size of messages is now:")
+			s.processBatch()
 			processingTime = time.Since(tickStartTime)
 			lastTickTime = currentTime
 			if s.DebugMode {
@@ -40,34 +44,42 @@ func (s *Server) gameLoopThread() {
 	}
 }
 
-func (s *Server) readIncomingMessages() {
-	select {
-	case msg := <-s.ReceiveMessagesChannel:
-		s.MessagesToProcess = append(s.MessagesToProcess, msg)
-	default:
-		return
+func (s *Server) readIncomingMessages(maxMessages int) {
+	for i := 0; i < maxMessages; i++ {
+		select {
+		case msg := <-s.ReceiveMessagesChannel:
+			s.MessagesToProcess = append(s.MessagesToProcess, msg)
+		default:
+			// No more messages in the channel, exit the loop
+			return
+		}
 	}
 }
 
-func processTickData(message *messages.Message) bool {
-	// Simulate processing
-	fmt.Printf("Processing: %+v\n", *message)
+func (s *Server) processTickData(message *messages.Message) bool {
+	var msg messages.Sequence
+	decoder := codec.NewDecoderBytes(message.MessageContent, &s.MsgPackHandler)
+	err := decoder.Decode(&msg)
+	if err != nil {
+		slog.Error("Error decoding message", "error", err)
+		return false // Return false if processing failed
+	}
+	slog.Info("Processing message", "message", msg.Message)
+	// Add your processing logic here
 	return true // Return true if processed successfully
 }
 
-// TODO: #13 Two processing lanes, One for reliable and one for unreliable?
-func processBatch(slice []messages.Message) []messages.Message {
+func (s *Server) processBatch() {
 	n := 0
-	for i := 0; i < len(slice); i++ {
-		if processTickData(&slice[i]) {
-			// Element processed, skip it
-			continue
+	for i := 0; i < len(s.MessagesToProcess); i++ {
+		if !s.processTickData(&s.MessagesToProcess[i]) {
+			// If not processed, keep it
+			if i != n {
+				s.MessagesToProcess[n] = s.MessagesToProcess[i]
+			}
+			n++
 		}
-		// Element not processed, keep it
-		if i != n {
-			slice[n] = slice[i]
-		}
-		n++
 	}
-	return slice[:n]
+	// Truncate the slice to remove processed messages
+	s.MessagesToProcess = s.MessagesToProcess[:n]
 }

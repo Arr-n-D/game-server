@@ -89,8 +89,8 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 	defer wg.Done()
 
 	// Random delay to start sending messages at different times
-	randomDelay := time.Duration(rand.Intn(1000)) * time.Millisecond
-	time.Sleep(randomDelay)
+	randomStartDelay := time.Duration(rand.Intn(1000)) * time.Millisecond
+	time.Sleep(randomStartDelay)
 
 	baseMessage := fmt.Sprintf("Player %d, Sequence: ", playerID)
 	for i := 1; i <= MessagesPerPlayer; i++ {
@@ -109,6 +109,7 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 		}
 
 		msgToSend := &messages.Message{
+			MessageType:    1,
 			MessageContent: buff.Bytes(),
 		}
 
@@ -122,11 +123,12 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 
 		_, res := connection.SendMessage(newBuff.Bytes(), gns.SendReliable)
 		if res != gns.ResultOK {
-			fmt.Printf("Player %d: Issue fault on message %d\n", playerID, i)
+			fmt.Printf("Error: %s\n", res)
 		}
 
-		// Sleep to simulate 30 messages per second
-		time.Sleep(TotalDuration / MessagesPerPlayer)
+		// Random delay between messages to avoid all players sending at exactly the same intervals
+		randomInterval := time.Duration(rand.Intn(50)+15) * time.Millisecond
+		time.Sleep(randomInterval)
 	}
 	fmt.Printf("Player %d finished sending %d messages\n", playerID, MessagesPerPlayer)
 }

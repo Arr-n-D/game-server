@@ -18,10 +18,6 @@ func (s *Server) networkThread() {
 
 }
 
-type Item struct {
-	Foo string
-}
-
 func (s *Server) pollForIncomingMessages() {
 	for !s.Quit {
 

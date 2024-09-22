@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"internal/messages"
+	"internal/gamemessages"
 	"log"
 	"math/rand"
 	"net"
@@ -96,7 +96,7 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 	for i := 1; i <= MessagesPerPlayer; i++ {
 		message := baseMessage + strconv.Itoa(i)
 		var handler codec.MsgpackHandle
-		sequence := &messages.Sequence{
+		sequence := &gamemessages.Sequence{
 			Message: message,
 		}
 
@@ -108,7 +108,7 @@ func simulatePlayer(playerID int, connection gns.Connection, wg *sync.WaitGroup)
 			panic("Foobar")
 		}
 
-		msgToSend := &messages.Message{
+		msgToSend := &gamemessages.GameMessage{
 			MessageType:    1,
 			MessageContent: buff.Bytes(),
 		}

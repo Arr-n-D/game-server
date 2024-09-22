@@ -13,6 +13,7 @@ import (
 	"internal/gamemessages"
 
 	"github.com/arr-n-d/gns"
+	"github.com/getsentry/sentry-go"
 	"github.com/ugorji/go/codec"
 	"gorm.io/gorm"
 )
@@ -52,6 +53,12 @@ func Start(conf *configuration.Configuration) error {
 	}
 
 	database.InitDatabase()
+	dbInstance := database.GetDatabaseInstance()
+
+	if dbInstance == nil {
+		sentry.CaptureMessage("Database instance is nil and shouldn't be")
+		panic("Database instance is nil and shouldn't be.")
+	}
 
 	serverInstance := &Server{
 		PollGroup:              poll,
@@ -60,7 +67,7 @@ func Start(conf *configuration.Configuration) error {
 		ReceiveMessagesChannel: make(chan gamemessages.GameMessage, 200),
 		SendMessagesChannel:    make(chan gamemessages.GameMessage, 200),
 		DebugMode:              false,
-		DB:                     database.DATABASE,
+		DB:                     dbInstance,
 	}
 
 	serverInstance.InitializeGameFuncsMap()
@@ -107,18 +114,4 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 			break
 		}
 	}
-}
-
-func (s *Server) InitializeGameFuncsMap() {
-	gamemessages.MESSAGE_TYPE_TO_GAME_FUNC = map[byte]func(interface{}){
-		1: func(interface{}) {
-			s.Test()
-		},
-	}
-}
-
-func (s *Server) InitializeCommandsMap() {}
-
-func (s *Server) Test() {
-
 }

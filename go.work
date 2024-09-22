@@ -2,6 +2,7 @@ go 1.23.0
 
 use (
     ./packages/internal
+    ./packages/migrator
     ./packages/server
     ./packages/client
 )

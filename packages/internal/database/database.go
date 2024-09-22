@@ -1,8 +1,10 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"internal/configuration"
+	"log"
 	"log/slog"
 
 	"gorm.io/driver/postgres"
@@ -10,7 +12,7 @@ import (
 )
 
 var (
-	DATABASE *gorm.DB
+	database *gorm.DB
 )
 
 func InitDatabase() {
@@ -20,8 +22,8 @@ func InitDatabase() {
 func heavenlyDragonsDatabase() *gorm.DB {
 	var err error
 
-	if DATABASE == nil {
-		DATABASE, err = initDatabaseConnection()
+	if database == nil {
+		database, err = initDatabaseConnection()
 
 		if err != nil {
 			slog.With(err).Error("Could not connect to Heavenly Dragons database")
@@ -31,7 +33,7 @@ func heavenlyDragonsDatabase() *gorm.DB {
 		slog.Info("Connected to Heavenly Dragons database")
 	}
 
-	return DATABASE
+	return database
 }
 
 func initDatabaseConnection() (db *gorm.DB, err error) {
@@ -64,4 +66,20 @@ func initDatabaseConnection() (db *gorm.DB, err error) {
 	}
 
 	return db, nil
+}
+
+func GetMigratorAndDbInstance() (gorm.Migrator, *sql.DB) {
+	db, err := database.DB()
+	if err != nil {
+		log.Fatalf("Error returning the database instance: %v\n", err)
+	}
+	return database.Migrator(), db
+}
+
+func GetDatabaseInstance() *gorm.DB {
+	if database == nil {
+		return nil
+	}
+
+	return database
 }

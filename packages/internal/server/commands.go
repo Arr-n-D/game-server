@@ -5,6 +5,8 @@ var COMMANDS_TO_FUNC = map[string]interface{}{
 	"Unlock": 102,
 }
 
+func (s *Server) InitializeCommandsMap() {}
+
 func (s *Server) LockServer() {
 
 }

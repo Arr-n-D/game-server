@@ -10,7 +10,7 @@ import (
 
 	"internal/configuration"
 	"internal/database"
-	"internal/messages"
+	"internal/gamemessages"
 
 	"github.com/arr-n-d/gns"
 	"github.com/ugorji/go/codec"
@@ -23,9 +23,9 @@ type Server struct {
 	listener               *gns.Listener
 	Quit                   bool
 	threadWaitGroup        sync.WaitGroup
-	ReceiveMessagesChannel chan messages.Message
-	SendMessagesChannel    chan messages.Message
-	MessagesToProcess      []messages.Message
+	ReceiveMessagesChannel chan gamemessages.GameMessage
+	SendMessagesChannel    chan gamemessages.GameMessage
+	MessagesToProcess      []gamemessages.GameMessage
 	MsgPackHandler         codec.MsgpackHandle
 	DebugMode              bool
 	DB                     *gorm.DB
@@ -57,11 +57,13 @@ func Start(conf *configuration.Configuration) error {
 		PollGroup:              poll,
 		listener:               l,
 		Quit:                   false,
-		ReceiveMessagesChannel: make(chan messages.Message, 200),
-		SendMessagesChannel:    make(chan messages.Message, 200),
+		ReceiveMessagesChannel: make(chan gamemessages.GameMessage, 200),
+		SendMessagesChannel:    make(chan gamemessages.GameMessage, 200),
 		DebugMode:              false,
 		DB:                     database.DATABASE,
 	}
+
+	serverInstance.InitializeGameFuncsMap()
 
 	dbgMode := os.Getenv("DEBUG")
 
@@ -105,4 +107,18 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 			break
 		}
 	}
+}
+
+func (s *Server) InitializeGameFuncsMap() {
+	gamemessages.MESSAGE_TYPE_TO_GAME_FUNC = map[byte]func(interface{}){
+		1: func(interface{}) {
+			s.Test()
+		},
+	}
+}
+
+func (s *Server) InitializeCommandsMap() {}
+
+func (s *Server) Test() {
+
 }

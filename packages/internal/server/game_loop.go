@@ -1,7 +1,7 @@
 package server
 
 import (
-	"internal/messages"
+	"internal/gamemessages"
 	"log/slog"
 	"time"
 
@@ -11,8 +11,8 @@ import (
 const (
 	tickRate     = 24
 	tickDuration = time.Second / tickRate
+	maxThreshold = .8
 )
-
 
 // TODO: Read channel of 5000 size. If we're at 80% of threshold, start several Goroutines with batching on the processing
 func (s *Server) gameLoopThread() {
@@ -56,16 +56,16 @@ func (s *Server) readIncomingMessages(maxMessages int) {
 	}
 }
 
-func (s *Server) processTickData(message *messages.Message) bool {
-	var msg messages.Sequence
-	decoder := codec.NewDecoderBytes(message.MessageContent, &s.MsgPackHandler)
+func (s *Server) processTickData(gameMsg *gamemessages.GameMessage) bool {
+	msg := gamemessages.MESSAGE_TYPE_TO_TYPE_STRUCT[gameMsg.MessageType]
+	decoder := codec.NewDecoderBytes(gameMsg.MessageContent, &s.MsgPackHandler)
 	err := decoder.Decode(&msg)
 	if err != nil {
 		slog.Error("Error decoding message", "error", err)
 		return false // Return false if processing failed
 	}
-	slog.Info("Processing message", "message", msg.Message)
-	// Add your processing logic here
+
+	gamemessages.MESSAGE_TYPE_TO_GAME_FUNC[gameMsg.MessageType](msg)
 	return true // Return true if processed successfully
 }
 

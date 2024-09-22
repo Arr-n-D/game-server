@@ -1,7 +1,7 @@
 package server
 
 import (
-	"internal/messages"
+	"internal/gamemessages"
 
 	"github.com/arr-n-d/gns"
 	"github.com/getsentry/sentry-go"
@@ -34,7 +34,7 @@ func (s *Server) pollForIncomingMessages() {
 			panic("Failed to receive messages")
 		}
 
-		var msg messages.Message
+		var msg gamemessages.GameMessage
 
 		// TODO: #14 Grab the information of the messagesPtr like the connection, user data, etc, and put it in message
 		decoder := codec.NewDecoderBytes(messagesPtr[0].Payload(), &s.MsgPackHandler)
@@ -45,15 +45,13 @@ func (s *Server) pollForIncomingMessages() {
 			panic("An error occured decoding a packet") // THIS SHOULD NOT BE IN PRODUCTION. DEV ONLY
 		}
 
+		msg.MsgNumber = messagesPtr[0].MessageNumber()
+		msg.UserData = messagesPtr[0].UserData()
+		msg.Connection = messagesPtr[0].Conn()
+		msg.ReceivedAt = messagesPtr[0].Timestamp()
+		msg.Flags = messagesPtr[0].Flags()
+
 		messagesPtr[0].Release()
-
-		// decoder = codec.NewDecoderBytes(msg.MessageContent, &handler)
-		// err = decoder.Decode(&msg2)
-		// if err != nil {
-		// 	panic("Foobar")
-		// }
-
-		// fmt.Println(msg2.Message)
 
 		s.ReceiveMessagesChannel <- msg
 	}

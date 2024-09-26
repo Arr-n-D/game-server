@@ -54,7 +54,7 @@ func initDatabaseConnection() (db *gorm.DB, err error) {
 
 	} else {
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d application_name=HeavenlyDragons",
-			"127.0.0.1", "local", "local", "local", 5432,
+			"postgres", "local", "local", "local", 5432,
 		)
 	}
 

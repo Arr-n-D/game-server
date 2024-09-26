@@ -3,7 +3,7 @@ module internal
 go 1.23.0
 
 require (
-	github.com/arr-n-d/gns v0.0.0-20240826231518-e23ef919d1ee
+	github.com/arr-n-d/gns v0.0.0-20240924142037-0194e2af491c
 	github.com/getsentry/sentry-go v0.28.1
 	github.com/ugorji/go/codec v1.2.7
 )

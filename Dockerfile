@@ -37,4 +37,8 @@ COPY --from=build-valve-sockets /sockets/gns/lib/GameNetworkingSockets/build/bin
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 COPY . /app/
-RUN go run /app/packages/server/main.go
+
+RUN go build -o ./build/game-server /app/packages/server
+
+# CMD specifies the binary to be run (with optional parameters)
+CMD ["./build/game-server"]

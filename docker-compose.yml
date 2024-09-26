@@ -1,11 +1,20 @@
 version: "3.8"
 
 services:
-  # app:
+  server: 
+    image: game-server
+    networks:
+      - game-server
+    ports:
+      - "27015:27015/udp"
+    env_file:
+      - .env
+    depends_on:
+      postgres: 
+        condition: service_healthy
 
   postgres:
-    image: postgres:15.4-alpine
-    container_name: "game-server-db"
+    image: 'postgres:15'
     networks:
       - game-server
     ports:
@@ -14,6 +23,17 @@ services:
       - POSTGRES_DB=local
       - POSTGRES_USER=local
       - POSTGRES_PASSWORD=local
+    healthcheck:
+            test:
+                - CMD
+                - pg_isready
+                - '-q'
+                - '-d'
+                - '${POSTGRES_DB}'
+                - '-U'
+                - '${POSTGRES_USER}'
+            retries: 3
+            timeout: 5s
   redis:
         image: 'redis:alpine'
         ports:

@@ -1,5 +1,7 @@
 github.com/arr-n-d/gns v0.0.0-20240826231518-e23ef919d1ee h1:lmYpch85wjSWCXLl2xXewXPPbPjyAkG8mk6AMJrFZ3k=
 github.com/arr-n-d/gns v0.0.0-20240826231518-e23ef919d1ee/go.mod h1:YSbkNuBzSsx+7HtueQKOe415a3tODhv77Hx6fcAkEzI=
+github.com/arr-n-d/gns v0.0.0-20240924142037-0194e2af491c h1:8MvS8BGEJ2XWoI/KLovLe54+08JmztH2daMVk1PsJWk=
+github.com/arr-n-d/gns v0.0.0-20240924142037-0194e2af491c/go.mod h1:YSbkNuBzSsx+7HtueQKOe415a3tODhv77Hx6fcAkEzI=
 github.com/aws/aws-sdk-go-v2 v1.30.5 h1:mWSRTwQAb0aLE17dSzztCVJWI9+cRMgqebndjwDyK0g=
 github.com/aws/aws-sdk-go-v2 v1.30.5/go.mod h1:CT+ZPWXbYrci8chcARI3OmI/qgd+f6WtuLOoaIA8PR0=
 github.com/aws/aws-sdk-go-v2/config v1.27.35 h1:jeFgiWYNV0vrgdZqB4kZBjYNdy0IKkwrAjr2fwpHIig=

@@ -37,11 +37,15 @@ func Start(conf *configuration.Configuration) error {
 		setDebugOutputFunction(gns.DebugOutputTypeEverything)
 	}
 
+	cfg := gns.ConfigMap{
+		gns.ConfigIPAllowWithoutAuth: 1,
+	}
+
 	l, err := gns.Listen(&net.UDPAddr{
-		IP:   net.IP{127, 0, 0, 1},
+		IP:   nil,
 		Port: int(conf.GameServerPort),
 	},
-		nil,
+		cfg,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to listen on port %d. %w", conf.GameServerPort, err)
@@ -102,16 +106,18 @@ func (s *Server) StatusCallBackChanged(info *gns.StatusChangedCallbackInfo) {
 	case gns.ConnectionStateConnected:
 		slog.Debug("accepted connection")
 	case gns.ConnectionStateConnecting:
-		slog.Debug("connecting")
-		conn := info.Conn()
-		if conn.Accept() != gns.ResultOK {
-			slog.Error("failed to accept client")
-			break
-		}
+		// slog.Debug("connecting")
+		// conn := info.Conn()
+		// res := conn.Accept()
+		// if res != gns.ResultOK {
+		// 	slog.With(res, "response").Error("Failed to accept client with: ")
+		// 	// slog.Error("failed to accept client")
+		// 	break
+		// }
 
-		if !conn.SetPollGroup(s.PollGroup) {
-			slog.Error("failed to set poll group")
-			break
-		}
+		// if !conn.SetPollGroup(s.PollGroup) {
+		// 	slog.Error("failed to set poll group")
+		// 	break
+		// }
 	}
 }
